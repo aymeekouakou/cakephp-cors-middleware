@@ -5,7 +5,6 @@ namespace Kouakou\Aymard;
 
 
 use Cake\Http\CorsBuilder;
-use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
 use http\Exception\BadHeaderException;
@@ -98,10 +97,6 @@ class CorsMiddleware
     {
         if ($response instanceof Response && $request instanceof ServerRequest) {
             $this->_cors = $response->cors($request);
-
-            if (!$this->_cors instanceof CorsBuilder) {
-                throw new BadRequestException("");
-            }
 
             $this->_applyAllowOrigin();
             $this->_applyAllowMethods();
