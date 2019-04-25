@@ -1,5 +1,5 @@
 {
-    "name": "aymardkouakou/cakephp-cors",
+  "name": "aymardkouakou/cakephp-cors-middleware",
     "description": "Basic Cors middleware for CakePHP framework.",
     "keywords": [
         "php",
