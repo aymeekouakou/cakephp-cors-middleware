@@ -30,18 +30,7 @@ class CorsMiddleware
     private $_allow_headers = [];
     private $_expose_headers = [];
 
-    public function __construct(
-        array $options = [
-            $this->_allow_tag => [
-                $this->_allow_origin_tag,
-                $this->_allow_method_tag,
-                $this->_allow_header_tag,
-                $this->_allow_expose_tag,
-                $this->_allow_credential_tag,
-                $this->_allow_age_tag
-            ]
-        ]
-    )
+    public function __construct(array $options = [])
     {
         if (empty($options) || !isset($this->_allow_tag, $options)) {
             throw new BadHeaderException("You must provide options params first.");
