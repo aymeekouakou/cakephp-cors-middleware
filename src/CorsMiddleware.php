@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Middleware;
+namespace Kouakou\Aymard;
 
 
 use Cake\Http\CorsBuilder;

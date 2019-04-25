@@ -1,14 +1,26 @@
 {
     "name": "aymardkouakou/cakephp-cors-middleware",
     "description": "Basic Cors middleware for CakePHP framework.",
-    "type": "library",
+    "keywords": [
+        "php",
+        "cors",
+        "cakephp"
+    ],
+    "homepage": "https://github.com/aymeekouakou/cakephp-cors-middleware",
     "license": "MIT",
     "authors": [
         {
             "name": "AYMARD KOUAKOU",
-            "email": "contact@aymardkouakou.me"
+            "email": "contact@aymardkouakou.me",
+            "homepage": "http://aymardkouakou.me",
+            "role": "developer"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "Kouakou\\Aymard\\": "src/"
+        }
+    },
     "require": {
         "php": "^7.3",
         "cakephp/cakephp": "^3.7"
