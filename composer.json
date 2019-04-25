@@ -1,0 +1,16 @@
+{
+    "name": "aymardkouakou/cakephp-cors-middleware",
+    "description": "Basic Cors middleware for CakePHP framework.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "AYMARD KOUAKOU",
+            "email": "contact@aymardkouakou.me"
+        }
+    ],
+    "require": {
+        "php": "^7.3",
+        "cakephp/cakephp": "^3.7"
+    }
+}
