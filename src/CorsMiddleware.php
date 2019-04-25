@@ -4,6 +4,8 @@
 namespace AymardKouakou\CakePHP\CorsMiddleware;
 
 
+use Cake\Http\CorsBuilder;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
 use http\Exception\BadHeaderException;
@@ -48,45 +50,52 @@ class CorsMiddleware
         $this->_opts = $options;
     }
 
+    private function _apply($method, $values = null)
+    {
+        if (($this->_cors instanceof CorsBuilder) && (method_exists($this->_cors, $method))) {
+            $this->_cors = ($values !== null) ? $this->_cors->{$method}($values) : $this->_cors->{$method}();
+        }
+    }
+
     private function _applyAllowOrigin()
     {
         if (array_key_exists($this->_allow_origin_tag, $this->_opts[$this->_allow_tag])) {
-            return $this->_cors->allowOrigin($this->_origins);
+            $this->_apply("allowOrigin", $this->_origins);
         }
     }
 
     private function _applyAllowMethods()
     {
         if (array_key_exists($this->_allow_method_tag, $this->_opts[$this->_allow_tag])) {
-            return $this->_cors->allowMethods($this->_methods);
+            $this->_apply("allowMethods", $this->_methods);
         }
     }
 
     private function _applyAllowHeaders()
     {
         if (array_key_exists($this->_allow_header_tag, $this->_opts[$this->_allow_tag])) {
-            return $this->_cors->allowHeaders($this->_allow_headers);
+            $this->_apply("allowHeaders", $this->_allow_headers);
         }
     }
 
     private function _applyAllowCredentials()
     {
         if (array_key_exists($this->_allow_credential_tag, $this->_opts[$this->_allow_tag])) {
-            return $this->_cors->allowCredentials();
+            $this->_apply("allowCredentials");
         }
     }
 
     private function _applyExposeHerders()
     {
         if (array_key_exists($this->_allow_expose_tag, $this->_opts[$this->_allow_tag])) {
-            return $this->_cors->exposeHeaders($this->_expose_headers);
+            $this->_apply("exposeHeaders", $this->_expose_headers);
         }
     }
 
     private function _applyMaxAge()
     {
         if (array_key_exists($this->_allow_age_tag, $this->_opts[$this->_allow_tag])) {
-            return $this->_cors->maxAge($this->_max_age);
+            $this->_apply("maxAge", $this->_max_age);
         }
     }
 
@@ -101,6 +110,10 @@ class CorsMiddleware
         if ($response instanceof Response && $request instanceof ServerRequest) {
             $this->_cors = $response->cors($request);
 
+            if (!$this->_cors instanceof CorsBuilder) {
+                throw new BadRequestException("");
+            }
+
             $this->_applyAllowOrigin();
             $this->_applyAllowMethods();
             $this->_applyAllowHeaders();
@@ -112,6 +125,24 @@ class CorsMiddleware
         }
 
         return $next($request, $response);
+    }
+
+    public function withOrigin(string $name)
+    {
+        $this->_origins[] = $name;
+
+        return $this;
+    }
+
+    public function withOrigins(array $names)
+    {
+        if (!empty($names)) {
+            foreach ($names as $name) {
+                $this->withOrigin($name);
+            }
+        }
+
+        return $this;
     }
 
     public function withMethod(string $name)
