@@ -1,7 +1,7 @@
 <?php
 
 
-namespace AymardKouakou\CakePHP\CorsMiddleware;
+namespace App\Middleware;
 
 
 use Cake\Http\CorsBuilder;
