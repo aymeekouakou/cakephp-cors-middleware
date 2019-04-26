@@ -2,6 +2,10 @@ language: php
 php:
   - '7.3'
 
+before_script:
+  - composer require php
+  - composer require cakephp/cakephp
+
 # safelist
 branches:
   only:
