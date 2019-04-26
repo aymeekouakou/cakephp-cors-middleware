@@ -1,0 +1,13 @@
+language: php
+php:
+  - '7.3'
+
+# safelist
+branches:
+  only:
+    - master
+    - stable
+
+notifications:
+  email:
+    - contact@aymardkouakou.me
