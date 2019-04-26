@@ -4,6 +4,7 @@
 namespace Kouakou\Aymard;
 
 
+use Cake\Core\Configure;
 use Cake\Http\CorsBuilder;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
@@ -85,15 +86,12 @@ class CorsMiddleware
      */
     public function __invoke($request, $response, $next)
     {
-        if ($response instanceof Response && $request instanceof ServerRequest) {
-            $methods = ['GET', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'];
-            $headers = ['Authorization', 'Content-Type'];
-
-            return $response
+        if (Configure::read('debug') && ($response instanceof Response) && ($request instanceof ServerRequest)) {
+            $response = $response
                 ->cors($request)
                 ->allowOrigin('localhost:4200')
-                ->allowMethods($methods)
-                ->allowHeaders($headers)
+                ->allowMethods(['GET', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'])
+                ->allowHeaders(['Authorization', 'Content-Type', 'Origin'])
                 ->allowCredentials()
                 ->build();
         }
