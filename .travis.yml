@@ -4,11 +4,7 @@ language: php
 php:
   - '7.3'
 
-before_install:
-  - composer self-update
-
 install:
-  - composer require php
   - composer require cakephp/cakephp
 
 branches:
