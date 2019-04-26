@@ -7,7 +7,6 @@ namespace Kouakou\Aymard;
 use Cake\Http\CorsBuilder;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
-use http\Exception\BadHeaderException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -28,15 +27,6 @@ class CorsMiddleware
     private $_methods = [];
     private $_allow_headers = [];
     private $_expose_headers = [];
-
-    public function __construct(array $options = [])
-    {
-        if (empty($options) || !isset($this->_allow_tag, $options)) {
-            throw new BadHeaderException("You must provide options params first.");
-        }
-
-        $this->_opts = $options;
-    }
 
     private function _apply($method, $values = null)
     {
@@ -96,16 +86,16 @@ class CorsMiddleware
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
     {
         if ($response instanceof Response && $request instanceof ServerRequest) {
-            $this->_cors = $response->cors($request);
+            $methods = ['GET', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'];
+            $headers = ['Authorization', 'Content-Type'];
 
-            $this->_applyAllowOrigin();
-            $this->_applyAllowMethods();
-            $this->_applyAllowHeaders();
-            $this->_applyAllowCredentials();
-            $this->_applyExposeHerders();
-            $this->_applyMaxAge();
-
-            $response = $this->_cors->build();
+            $response = $response
+                ->cors($request)
+                ->allowOrigin('localhost:4200')
+                ->allowMethods($methods)
+                ->allowHeaders($headers)
+                ->allowCredentials()
+                ->build();
         }
 
         return $next($request, $response);
