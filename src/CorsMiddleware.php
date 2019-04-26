@@ -13,69 +13,66 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class CorsMiddleware
 {
-    private $_cors = null;
-    private $_allow_tag = "allow";
-    private $_allow_age_tag = "age";
-    private $_allow_origin_tag = "origin";
-    private $_allow_method_tag = "method";
-    private $_allow_header_tag = "header";
-    private $_allow_expose_tag = "expose";
-    private $_allow_credential_tag = "credential";
+    private const PATTERN = '%s.%s';
 
-    private $_opts = [];
-    private $_max_age = 0;
-    private $_origins = [];
-    private $_methods = [];
-    private $_allow_headers = [];
-    private $_expose_headers = [];
+    public const CORS_TAG = "Cors";
+    public const CORS_ALLOW_ORIGIN_TAG = "AllowOrigin";
+    public const CORS_ALLOW_METHODS_TAG = "AllowMethods";
+    public const CORS_ALLOW_HEADERS_TAG = "AllowHeaders";
+    public const CORS_ALLOW_CREDENTIALS_TAG = "AllowCredentials";
+    public const CORS_EXPOSE_HEADERS_TAG = "ExposeHeaders";
+    public const CORS_MAX_AGE_TAG = "ExposeHeaders";
 
-    private function _apply($method, $values = null)
+    /**
+     * @param CorsBuilder $corsBuilder
+     * @return CorsBuilder
+     */
+    private function getDefault(CorsBuilder $corsBuilder): CorsBuilder
     {
-        if (($this->_cors instanceof CorsBuilder) && (method_exists($this->_cors, $method))) {
-            $this->_cors = ($values !== null) ? $this->_cors->{$method}($values) : $this->_cors->{$method}();
-        }
+        return $corsBuilder
+            ->allowOrigin('*')
+            ->allowMethods(['GET', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'])
+            ->allowHeaders(['Authorization', 'Content-Type', 'Origin'])
+            ->allowCredentials();
     }
 
-    private function _applyAllowOrigin()
+    /**
+     * @param CorsBuilder $corsBuilder
+     * @return CorsBuilder
+     */
+    private function apply(CorsBuilder $corsBuilder): CorsBuilder
     {
-        if (array_key_exists($this->_allow_origin_tag, $this->_opts[$this->_allow_tag])) {
-            $this->_apply("allowOrigin", $this->_origins);
+        $allowOrigin = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_ORIGIN_TAG);
+        if (Configure::check($allowOrigin)) {
+            $corsBuilder = $corsBuilder->allowOrigin(Configure::read($allowOrigin));
         }
-    }
 
-    private function _applyAllowMethods()
-    {
-        if (array_key_exists($this->_allow_method_tag, $this->_opts[$this->_allow_tag])) {
-            $this->_apply("allowMethods", $this->_methods);
+        $allowMethods = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_METHODS_TAG);
+        if (Configure::check($allowMethods)) {
+            $corsBuilder = $corsBuilder->allowMethods((array)Configure::read($allowMethods));
         }
-    }
 
-    private function _applyAllowHeaders()
-    {
-        if (array_key_exists($this->_allow_header_tag, $this->_opts[$this->_allow_tag])) {
-            $this->_apply("allowHeaders", $this->_allow_headers);
+        $allowHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_HEADERS_TAG);
+        if (Configure::check($allowHeaders)) {
+            $corsBuilder = $corsBuilder->allowHeaders((array)Configure::read($allowHeaders));
         }
-    }
 
-    private function _applyAllowCredentials()
-    {
-        if (array_key_exists($this->_allow_credential_tag, $this->_opts[$this->_allow_tag])) {
-            $this->_apply("allowCredentials");
+        $exposeHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_EXPOSE_HEADERS_TAG);
+        if (Configure::check($exposeHeaders)) {
+            $corsBuilder = $corsBuilder->exposeHeaders((array)Configure::read($exposeHeaders));
         }
-    }
 
-    private function _applyExposeHerders()
-    {
-        if (array_key_exists($this->_allow_expose_tag, $this->_opts[$this->_allow_tag])) {
-            $this->_apply("exposeHeaders", $this->_expose_headers);
+        $maxAge = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_MAX_AGE_TAG);
+        if (Configure::check($maxAge)) {
+            $corsBuilder = $corsBuilder->maxAge((int)Configure::read($maxAge));
         }
-    }
 
-    private function _applyMaxAge()
-    {
-        if (array_key_exists($this->_allow_age_tag, $this->_opts[$this->_allow_tag])) {
-            $this->_apply("maxAge", $this->_max_age);
+        $allowCredentials = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_CREDENTIALS_TAG);
+        if (Configure::check($allowCredentials)) {
+            $corsBuilder = $corsBuilder->allowCredentials();
         }
+
+        return $corsBuilder;
     }
 
     /**
@@ -87,83 +84,12 @@ class CorsMiddleware
     public function __invoke($request, $response, $next)
     {
         if (Configure::read('debug') && ($response instanceof Response) && ($request instanceof ServerRequest)) {
-            $response = $response
-                ->cors($request)
-                ->allowOrigin('localhost:4200')
-                ->allowMethods(['GET', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'])
-                ->allowHeaders(['Authorization', 'Content-Type', 'Origin'])
-                ->allowCredentials()
-                ->build();
+            $corsBuilder = $response->cors($request);
+            $corsBuilder = !Configure::check(self::CORS_TAG) ? $this->getDefault($corsBuilder) : $this->apply($corsBuilder);
+            $response = $corsBuilder->build();
         }
 
         return $next($request, $response);
     }
 
-    public function withOrigin(string $name)
-    {
-        $this->_origins[] = $name;
-
-        return $this;
-    }
-
-    public function withOrigins(array $names)
-    {
-        if (!empty($names)) {
-            foreach ($names as $name) {
-                $this->withOrigin($name);
-            }
-        }
-
-        return $this;
-    }
-
-    public function withMethod(string $name)
-    {
-        $this->_methods[] = strtoupper($name);
-
-        return $this;
-    }
-
-    public function withMethods(array $names)
-    {
-        if (!empty($names)) {
-            foreach ($names as $name) {
-                $this->withMethod($name);
-            }
-        }
-
-        return $this;
-    }
-
-    public function withAllowHeader(string $name)
-    {
-        $this->_allow_headers[] = strtolower($name);
-
-        return $this;
-    }
-
-    public function withAllowHeaders(array $names)
-    {
-        if (!empty($names)) {
-            foreach ($names as $name) {
-                $this->withAllowHeader($name);
-            }
-        }
-
-        return $this;
-    }
-
-    public function withExposHeader(string $name)
-    {
-        $this->_expose_headers[] = strtolower($name);
-
-        return $this;
-    }
-
-    public function withMaxAge(int $number)
-    {
-        $this->_max_age[] = $number;
-
-        return $this;
-    }
 }
