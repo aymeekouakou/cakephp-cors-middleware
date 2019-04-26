@@ -83,13 +83,13 @@ class CorsMiddleware
      * @param callable $next Callback to invoke the next middleware.
      * @return ResponseInterface A response
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function __invoke($request, $response, $next)
     {
         if ($response instanceof Response && $request instanceof ServerRequest) {
             $methods = ['GET', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'];
             $headers = ['Authorization', 'Content-Type'];
 
-            $response = $response
+            return $response
                 ->cors($request)
                 ->allowOrigin('localhost:4200')
                 ->allowMethods($methods)
