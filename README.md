@@ -51,6 +51,6 @@ $middlewareQueue
 
 By default the middleware authorize cors for all origins, all methods and all headers. No configuration required for work fine.
 
-##TODO
+## TODO
 
  Documentation for custom configuration
