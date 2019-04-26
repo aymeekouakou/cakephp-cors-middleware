@@ -1,17 +1,19 @@
+
 language: php
+
 php:
   - '7.3'
 
-before_script:
+before_install:
+  - composer self-update
+
+install:
   - composer require php
   - composer require cakephp/cakephp
 
-# safelist
 branches:
   only:
     - master
-    - stable
 
 notifications:
-  email:
-    - contact@aymardkouakou.me
+  email: false
