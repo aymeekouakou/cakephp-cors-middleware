@@ -51,6 +51,46 @@ $middlewareQueue
 
 By default the middleware authorize cors for all origins, all methods and all headers. No configuration required for work fine.
 
-## TODO
+## Custom configuration
 
- Documentation for custom configuration
+For using custom configuration, you must adding a ````Cors```` array in your ````config/app.php```` file.
+
+````php
+'Cors' => [
+
+    // Authorized options here
+    
+    'AllowOrigin' => string|array,
+    'AllowMethods' => array,
+    'AllowHeaders' => array,
+    'ExposeHeaders' => array,
+    'AllowCredentials' => true|false,
+    'Maxge' => int
+    
+]
+````
+
+## Authorized options
+
+#### Allow all domains
+ 
+````php
+'AllowOrigin' => '*'
+// Or
+'AllowOrigin' => ['*']
+````
+
+#### Allow one domain only
+ 
+````php
+'AllowOrigin' => 'localhost:4200'
+````
+
+#### Allow multiple domains
+ 
+````php
+'AllowOrigin' => [
+    'localhost:4200',
+    ...
+]
+````

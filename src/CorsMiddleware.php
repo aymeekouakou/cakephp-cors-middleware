@@ -21,7 +21,7 @@ class CorsMiddleware
     public const CORS_ALLOW_HEADERS_TAG = "AllowHeaders";
     public const CORS_ALLOW_CREDENTIALS_TAG = "AllowCredentials";
     public const CORS_EXPOSE_HEADERS_TAG = "ExposeHeaders";
-    public const CORS_MAX_AGE_TAG = "ExposeHeaders";
+    public const CORS_MAX_AGE_TAG = "MaxAge";
 
     /**
      * @param CorsBuilder $corsBuilder
