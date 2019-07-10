@@ -27,52 +27,21 @@ class CorsMiddleware
      * @param CorsBuilder $corsBuilder
      * @return CorsBuilder
      */
-    private function getDefault(CorsBuilder $corsBuilder): CorsBuilder
-    {
-        return $corsBuilder
-            ->allowOrigin('*')
-            ->allowMethods(['*'])
-            ->allowHeaders(['Authorization', 'Content-Type', 'Origin', 'Accept', 'X-Requested-With'])
-            ->allowCredentials();
-    }
-
-    /**
-     * @param CorsBuilder $corsBuilder
-     * @return CorsBuilder
-     */
     private function apply(CorsBuilder $corsBuilder): CorsBuilder
     {
-        $allowOrigin = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_ORIGIN_TAG);
-        if (Configure::check($allowOrigin)) {
-            $corsBuilder = $corsBuilder->allowOrigin(Configure::read($allowOrigin));
-        }
-
-        $allowMethods = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_METHODS_TAG);
-        if (Configure::check($allowMethods)) {
-            $corsBuilder = $corsBuilder->allowMethods((array)Configure::read($allowMethods));
-        }
-
-        $allowHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_HEADERS_TAG);
-        if (Configure::check($allowHeaders)) {
-            $corsBuilder = $corsBuilder->allowHeaders((array)Configure::read($allowHeaders));
-        }
-
-        $exposeHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_EXPOSE_HEADERS_TAG);
-        if (Configure::check($exposeHeaders)) {
-            $corsBuilder = $corsBuilder->exposeHeaders((array)Configure::read($exposeHeaders));
-        }
-
         $maxAge = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_MAX_AGE_TAG);
-        if (Configure::check($maxAge)) {
-            $corsBuilder = $corsBuilder->maxAge((int)Configure::read($maxAge));
-        }
+        $allowOrigin = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_ORIGIN_TAG);
+        $allowMethods = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_METHODS_TAG);
+        $allowHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_HEADERS_TAG);
+        $exposeHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_EXPOSE_HEADERS_TAG);
 
-        $allowCredentials = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_CREDENTIALS_TAG);
-        if (Configure::check($allowCredentials)) {
-            $corsBuilder = $corsBuilder->allowCredentials();
-        }
-
-        return $corsBuilder;
+        return $corsBuilder
+            ->allowOrigin(Configure::check($allowOrigin) ? Configure::read($allowOrigin) : ['*'])
+            ->allowMethods(Configure::check($allowMethods) ? Configure::read($allowMethods) : ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'])
+            ->allowHeaders(Configure::check($allowHeaders) ? Configure::read($allowHeaders) : ['Authorization', 'Content-Type', 'Origin', 'Accept', 'X-Requested-With'])
+            ->exposeHeaders(Configure::check($exposeHeaders) ? Configure::read($exposeHeaders) : ['Cache-Control', 'Content-Language', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma'])
+            ->maxAge(Configure::check($maxAge) ? (int)Configure::read($maxAge) : 600)
+            ->allowCredentials();
     }
 
     /**
@@ -84,9 +53,7 @@ class CorsMiddleware
     public function __invoke($request, $response, $next)
     {
         if (Configure::read('debug') && ($response instanceof Response) && ($request instanceof ServerRequest)) {
-            $corsBuilder = $response->cors($request);
-            $corsBuilder = !Configure::check(self::CORS_TAG) ? $this->getDefault($corsBuilder) : $this->apply($corsBuilder);
-            $response = $corsBuilder->build();
+            $response = $this->apply($response->withVary('Origin')->cors($request))->build();
         }
 
         return $next($request, $response);
