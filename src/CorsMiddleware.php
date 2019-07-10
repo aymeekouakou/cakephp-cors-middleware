@@ -31,8 +31,8 @@ class CorsMiddleware
     {
         return $corsBuilder
             ->allowOrigin('*')
-            ->allowMethods(['GET', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'])
-            ->allowHeaders(['Authorization', 'Content-Type', 'Origin'])
+            ->allowMethods(['*'])
+            ->allowHeaders(['Authorization', 'Content-Type', 'Origin', 'Accept', 'X-Requested-With'])
             ->allowCredentials();
     }
 
