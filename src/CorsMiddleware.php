@@ -36,7 +36,7 @@ class CorsMiddleware
         $exposeHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_EXPOSE_HEADERS_TAG);
 
         return $corsBuilder
-            ->allowOrigin(Configure::check($allowOrigin) ? Configure::read($allowOrigin) : ['*'])
+            ->allowOrigin(Configure::check($allowOrigin))
             ->allowMethods(Configure::check($allowMethods) ? Configure::read($allowMethods) : ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'])
             ->allowHeaders(Configure::check($allowHeaders) ? Configure::read($allowHeaders) : ['Authorization', 'Content-Type', 'Origin', 'Accept', 'X-Requested-With'])
             ->exposeHeaders(Configure::check($exposeHeaders) ? Configure::read($exposeHeaders) : ['Cache-Control', 'Content-Language', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma'])
@@ -52,7 +52,7 @@ class CorsMiddleware
      */
     public function __invoke($request, $response, $next)
     {
-        if (Configure::read('debug') && ($response instanceof Response) && ($request instanceof ServerRequest)) {
+        if ($response instanceof Response && $request instanceof ServerRequest) {
             $response = $this->apply($response->withVary('Origin')->cors($request))->build();
         }
 
