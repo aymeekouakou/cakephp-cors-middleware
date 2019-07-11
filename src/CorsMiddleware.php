@@ -13,15 +13,8 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class CorsMiddleware
 {
-    private const PATTERN = '%s.%s';
-
+    private const PATTERN = "%s.%s";
     public const CORS_TAG = "Cors";
-    public const CORS_ALLOW_ORIGIN_TAG = "AllowOrigin";
-    public const CORS_ALLOW_METHODS_TAG = "AllowMethods";
-    public const CORS_ALLOW_HEADERS_TAG = "AllowHeaders";
-    public const CORS_ALLOW_CREDENTIALS_TAG = "AllowCredentials";
-    public const CORS_EXPOSE_HEADERS_TAG = "ExposeHeaders";
-    public const CORS_MAX_AGE_TAG = "MaxAge";
 
     /**
      * @param CorsBuilder $corsBuilder
@@ -29,19 +22,58 @@ class CorsMiddleware
      */
     private function apply(CorsBuilder $corsBuilder): CorsBuilder
     {
-        $maxAge = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_MAX_AGE_TAG);
-        $allowOrigin = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_ORIGIN_TAG);
-        $allowMethods = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_METHODS_TAG);
-        $allowHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_ALLOW_HEADERS_TAG);
-        $exposeHeaders = sprintf(self::PATTERN, self::CORS_TAG, self::CORS_EXPOSE_HEADERS_TAG);
+        if ($this->checkCors()) {
+            if ($this->check(Cors::ALLOW_ORIGIN)) {
+                $corsBuilder = $corsBuilder->allowOrigin($this->read(Cors::ALLOW_ORIGIN));
+            }
 
-        return $corsBuilder
-            ->allowOrigin(Configure::check($allowOrigin))
-            ->allowMethods(Configure::check($allowMethods) ? Configure::read($allowMethods) : ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'])
-            ->allowHeaders(Configure::check($allowHeaders) ? Configure::read($allowHeaders) : ['Authorization', 'Content-Type', 'Origin', 'Accept', 'X-Requested-With'])
-            ->exposeHeaders(Configure::check($exposeHeaders) ? Configure::read($exposeHeaders) : ['Cache-Control', 'Content-Language', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma'])
-            ->maxAge(Configure::check($maxAge) ? (int)Configure::read($maxAge) : 600)
-            ->allowCredentials();
+            if ($this->check(Cors::ALLOW_METHODS)) {
+                $corsBuilder = $corsBuilder->allowMethods((array)$this->read(Cors::ALLOW_METHODS));
+            }
+
+            if ($this->check(Cors::ALLOW_HEADERS)) {
+                $corsBuilder = $corsBuilder->allowHeaders((array)$this->read(Cors::ALLOW_HEADERS));
+            }
+
+            if ($this->check(Cors::EXPOSE_HEADERS)) {
+                $corsBuilder = $corsBuilder->exposeHeaders((array)$this->read(Cors::EXPOSE_HEADERS));
+            }
+
+            if ($this->check(Cors::MAX_AGE)) {
+                $corsBuilder = $corsBuilder->maxAge($this->read(Cors::MAX_AGE));
+            }
+
+            if ($this->read(Cors::ALLOW_CREDENTIALS, false)) {
+                $corsBuilder = $corsBuilder->allowCredentials();
+            }
+        } else {
+            $corsBuilder = $corsBuilder
+                ->allowOrigin(CorsDefault::DEFAULT_ALLOW_ORIGIN)
+                ->allowMethods(CorsDefault::DEFAULT_ALLOW_METHODS)
+                ->allowHeaders(CorsDefault::DEFAULT_ALLOW_METHODS);
+        }
+
+        return $corsBuilder;
+    }
+
+    private function pattern($value): string
+    {
+        return sprintf(self::PATTERN, self::CORS_TAG, $value);
+    }
+
+    private function checkCors(): bool
+    {
+        return Configure::check(self::CORS_TAG);
+    }
+
+    private function check($value): bool
+    {
+        return Configure::check($this->pattern($value));
+    }
+
+    private function read($value, $default = null)
+    {
+        return $this->check($value) ? Configure::read($this->pattern($value)) : $default;
     }
 
     /**
