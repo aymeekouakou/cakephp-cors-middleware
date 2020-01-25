@@ -1,13 +1,13 @@
 [![Build Status](https://travis-ci.com/aymeekouakou/cakephp-cors-middleware.svg?branch=master)](https://travis-ci.com/aymeekouakou/cakephp-cors-middleware)
 
-A CakePHP (3.7+) middleware for activate cors domain in your application. [Middleware docs](https://book.cakephp.org/3.0/en/controllers/middleware.html).
+A CakePHP (4.0+) middleware for activate cors domain in your application. [Middleware docs](https://book.cakephp.org/3.0/en/controllers/middleware.html).
 
 [Learn more about CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 
 ## Requirements
 
 - PHP version 7.2 or higher
-- CakePhp 3.7 or higher
+- CakePhp 4.0 or higher
 
 ## Installation
 
@@ -65,7 +65,7 @@ For using custom configuration, you must adding a ````Cors```` array in your ```
     'AllowHeaders' => array,
     'ExposeHeaders' => array,
     'AllowCredentials' => true|false,
-    'Maxge' => int
+    'MaxAge' => int
     
 ]
 ````
